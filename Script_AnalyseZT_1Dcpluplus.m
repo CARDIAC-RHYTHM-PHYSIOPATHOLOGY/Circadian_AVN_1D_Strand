@@ -40,8 +40,10 @@
 %  Ggap_scale=3000;
 %  Ggapm_scale=7;
 %  Ncells_stim=5;
-%  BPM=350;
-%  BCL=60*1e3/BPM;
+% BPM=350;
+% BCL=60*1e3/BPM;
+%BCL=133.33;
+%BPM=BCL/60*1e3;
 % Time_Application_Circ=0;
 %  factor_Cav=1.2;
 % 
@@ -58,12 +60,14 @@
 % 
 % tic
 % [status,~] = system(commande_Simul);
+
+%system( ['powershell -command',[" cd e:\Analyse_Cardiac_AVN_Cplusplus_circ_13082026;.\Simul.bat"' );
+
 % save([Chemin,'param_data','.mat'],'-mat','-v7.3')
 % toc
 %**************************************************************************************************************************************
 
 %*******************************************************************************************************************************************
-
 
 %%
 % 
@@ -71,6 +75,7 @@
 % fprintf(fid,'%s\n',commande_Simul);
 %  fclose(fid);
 % system('commande_Simul.bat')
+
 %%
 clc
 clear
@@ -81,18 +86,19 @@ ZT(2,:)=[0.2;4;1];
 ZT(3,:)=[0.35;1.8;1];
 ZT(4,:)=[1;4.5;1];
 incCav=0.85;
-incKr=4.5;
-incKACh=1;
+incKr=1.2;
+incKACh=900;
 
 %Name_Analyse='ICav';
 %Name_Analyse='Ikr';
-Name_Analyse=['ZT0',num2str(incCav),'IKr',num2str(incKr),'IKACh',num2str(incKACh)];
-Name_Analyse1=['ZT0',num2str(incCav),'IKr',num2str(incKr),'IKACh',num2str(incKACh)];
+Name_Analyse=['ZT_0','ICav',num2str(incCav),'IKr',num2str(incKr),'IKACh',num2str(incKACh)];
+Name_Analyse1=['ZT_0','ICav',num2str(incCav),'IKr',num2str(incKr),'IKACh',num2str(incKACh)];
 %Name_Analyse='IKACh';
-deltax=65*1e-4;
+deltax=65*1e-3;%mm
 flag_save=0;
 TotalTime=5000;
 t_application=0; %msec
+
 dir_root=  uigetdir('E:');
 if dir_root==0
     return
@@ -161,13 +167,13 @@ figure(episode)
 subplot(2,2,1)
 
 imagesc(t,(1:Nbrecell).*deltax,Vm')
-xlabel('time msec');ylabel('distance cm')
-subtitle('Vm mV')
+xlabel('time msec');ylabel('distance mm')
+subtitle(['Vm mV',num2str(incCav),'IKr',num2str(incKr),'IKACh',num2str(incKACh)])
 colorbar
 subplot(2,2,2)
 
 imagesc(t,(1:Nbrecell).*deltax, ICaL_Tot')
-xlabel('time msec');ylabel('distance cm')
+xlabel('time msec');ylabel('distance mm')
 title('ICaL Total pA/pF')
 colorbar
 
@@ -265,7 +271,7 @@ saveas(gcf,[Chemin,'Population Cells_',Name_Analyse,num2str(incCav),'_',num2str(
 % Chemin=[dir_root,'\'];
 
 
-dx=0.0065028;
+dx=0.065028; %mm
 %Nbrecell=Ncells;
 %indextime=find(t<t_application,1,"last");
 BpmTable=zeros(Nbrecell,2);
@@ -447,49 +453,62 @@ end
 %%
 
 %********************************************************************************
-Nc1=10;Nc2=80;Nb=Nc2-Nc1;
+% VC measurements
+
+Nc1=10;Nc2=80;
+Nb=Nc2-Nc1;
 
    Tf=Events{Nc1};
-    Tl=Events{Nc2};
+   Tl=Events{Nc2};
 
         indexT1=find(Tf);
         indexT2=find(Tl);
   
-        distance=Nb * 65 *1e-4;
+        distance=Nb * 65 *1e-3;%mm
 
-        Tf_pamax=t(indexT1).*1e-3;
-        Tl_pamax=t(indexT2).*1e-3;
+        Tf_pamax=t(indexT1).*1e-3; % temps des Pa premiere myo
+        Tl_pamax=t(indexT2).*1e-3; % temps des Pa derniere myo
         % if length(Tl_pamax)< length(Tf_pamax)
-          
+
+
+figure
+hold on
+plot(t,Vm(:,Nc1),'b')
+
+plot(t,Vm(:,Nc2),'r')
+plot(t( Tf),Vm(Tf,Nc1),'db','MarkerSize',10,'MarkerFaceColor','b')
+plot(t(Tl),Vm(Tl,Nc2),'sr','MarkerSize',10)
+hold off
+
+        
         % end
         k=1;
-      for i=1:length(Tf_pamax)-1
-        index_wave= find(Tl_pamax>Tf_pamax(i),1,'first');
-        if  ~isempty(index_wave)
-        tempsTwdfTwf=[Tf_pamax(i) Tl_pamax(index_wave)];
+      for i=1:length(Tf_pamax)-3
+       % index_wave= find(Tl_pamax>Tf_pamax(i), 1,'first');
+       % if  ~isempty(index_wave)
+        %tempsTwdfTwf=[Tf_pamax(i) Tl_pamax(index_wave)];
         debut_wave(k)=Tf_pamax(i) ;
-            fin_wave(k)=Tl_pamax(index_wave);
-          duree(k)=tempsTwdfTwf(2)-tempsTwdfTwf(1);
+        fin_wave(k)=Tl_pamax(i);
+        duree(k)=Tl_pamax(i)-Tf_pamax(i);
+      vconduction(k)=distance/  duree(k);
+
        k=k+1;
-        end
+        %end
       end
        
-          vconduction=zeros(length(duree),1);
-        for i=1:length(duree)
-         Tbeat(i)=Tf_pamax(i);  
-         vconduction(i)=distance/duree(i);
-        end
- vconduction=vconduction';
+        
+ 
 %***********************************************************************************************
         figure('Name',['Conduction Velocity per Max Upstroke',Name_Analyse,' Modulation' ])
       
-            plot(Tbeat,vconduction,'or','MarkerSize',5)
+            plot(debut_wave,vconduction,'or','MarkerSize',5)
   
     
-        ylabel('Conduction Velocity (cm/sec)')
+        ylabel('Conduction Velocity (mm/sec)')
         xlabel('Time Beat (sec)')
-        title('Conduction Velocity (cm/sec)')
+        title(['Conduction Velocity (mm/sec)',num2str(incCav),'IKr',num2str(incKr),'IKACh',num2str(incKACh)])
         saveas(gcf,[Chemin,'Conduction_Velocity_',Name_Analyse,'.jpg'],'jpeg')
+       
         %*****************************************************************************************
        figure('Name','APD90 Distribution')
          histogram(Pool_APD,30)
