@@ -171,7 +171,7 @@ struct Parameters{
     // Distance between cells
     
     double deltax;
-	double Diff; //(mm/ms)
+	double Diff; //(mm^2/ms)
 
 };
 // End Parameters ===============================================================================//|
