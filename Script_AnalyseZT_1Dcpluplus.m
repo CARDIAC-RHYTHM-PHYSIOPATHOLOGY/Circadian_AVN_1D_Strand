@@ -580,3 +580,8 @@ hold off
 % histogram(vconduction2,30) 
 %end
 
+
+% figure
+% boxplot([ZT_0.VC,ZT_6.VC,ZT_12.VC,ZT_18.VC,ZT_0.VC],'Notch','on','Labels',{'ZT0','ZT6','ZT12','ZT18','ZT24'})
+% title('Compare Random Data from Different Distributions')
+% ylim([33 40])

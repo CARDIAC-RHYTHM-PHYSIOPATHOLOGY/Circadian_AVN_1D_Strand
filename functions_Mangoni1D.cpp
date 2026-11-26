@@ -997,8 +997,8 @@ void compute_If_mAVNM_BM( Parameters &p , Model_variables &var , State_variables
 	    s.If_va[i] = rush_larsen( s.If_va[i] , var.If_va_ss[i] , var.If_va_tau[i] , dt );
 	    
 	    // Compute If
-	    var.If_Na[i] = p.gf * 0.3833 * s.If_va[i] * ( s.Vm[i] - var.EK[i]  ); 
-	    var.If_K[i]  = p.gf * 0.3833 * s.If_va[i] * ( s.Vm[i] - var.ENa[i] ); 
+	    var.If_Na[i] = p.gf * 0.3833 * s.If_va[i] * ( s.Vm[i] - var.ENa[i]  ); 
+	    var.If_K[i]  = p.gf * 0.3833 * s.If_va[i] * ( s.Vm[i] - var.EK[i] ); 
 	    var.If[i]    = var.If_Na[i] + var.If_K[i];  
 	}
 }
